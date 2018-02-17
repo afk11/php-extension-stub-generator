@@ -23,7 +23,11 @@ class ParameterReflection extends BaseParameterReflection
             && ($type = $this->getType())
             && $type->isBuiltin()
         ) {
-            return (string) $type;
+            $val = (string) $type;
+            if ($this->allowsNull()) {
+                $val = "?{$val}";
+            }
+            return $val;
         }
 
         // can be dropped when dropping PHP7 support:
