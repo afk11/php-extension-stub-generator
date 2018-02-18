@@ -23,6 +23,7 @@ class FilesDumper
 
     private $reflectionExtension;
     private $docBlockGenerator;
+    private $fxnDocBlockLoader;
 
     public function __construct(ReflectionExtension $reflectionExtension)
     {
@@ -55,6 +56,18 @@ class FilesDumper
         return $generates;
     }
 
+    public function setFunctionDocBlockLoader(DocBlockLoader $loader)
+    {
+        $this->fxnDocBlockLoader = $loader;
+    }
+
+    public function getFunctionDocBlockLoader()
+    {
+        if (null === $this->fxnDocBlockLoader) {
+            $this->fxnDocBlockLoader = new DocBlockLoader([]);
+        }
+        return $this->fxnDocBlockLoader;
+    }
 
     public function setDocBlockGenerator(DocBlockGenerator $docBlockGenerator) : void
     {
@@ -118,6 +131,7 @@ class FilesDumper
 
     public function generateFunctions() : array
     {
+        $fxnDocLoader = $this->getFunctionDocBlockLoader();
         $functionFiles = [];
         foreach ($this->reflectionExtension->getFunctions() as $function_name => $phpFunctionReflection) {
 
@@ -127,6 +141,7 @@ class FilesDumper
 
             if (isset($functionFiles[$function_filename])) {
                 $functionFiles[$function_filename] .= "\n".
+                    FunctionGenerator::generateDocBlockByPrototypeArray($functionReflection->getPrototype(), $fxnDocLoader) . "\n".
                     FunctionGenerator::generateByPrototypeArray($functionReflection->getPrototype());
             } else {
                 $namespaceLine = '';
@@ -134,6 +149,7 @@ class FilesDumper
                     $namespaceLine = "namespace {$namespace};";
                 }
                 $functionFiles[$function_filename] = $namespaceLine . "\n" .
+                    FunctionGenerator::generateDocBlockByPrototypeArray($functionReflection->getPrototype(), $fxnDocLoader) . "\n".
                     FunctionGenerator::generateByPrototypeArray($functionReflection->getPrototype());
             }
         }

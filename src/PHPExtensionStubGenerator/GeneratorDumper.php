@@ -20,6 +20,7 @@ class GeneratorDumper
 
     private $reflectionExtension;
     private $docBlockGenerator;
+    private $fxnDocBlockLoader;
 
     public function __construct(ReflectionExtension $reflectionExtension)
     {
@@ -31,6 +32,19 @@ class GeneratorDumper
         yield from $this->generateConstants();
         yield from $this->generateFunctions();
         yield from $this->generateClasses();
+    }
+
+    public function setFunctionDocBlockLoader(DocBlockLoader $loader)
+    {
+        $this->fxnDocBlockLoader = $loader;
+    }
+
+    public function getFunctionDocBlockLoader()
+    {
+        if (null === $this->fxnDocBlockLoader) {
+            $this->fxnDocBlockLoader = new DocBlockLoader([]);
+        }
+        return $this->fxnDocBlockLoader;
     }
 
 
@@ -93,6 +107,8 @@ class GeneratorDumper
 
     public function generateFunctions() : Generator
     {
+        $docBlockLoader = $this->getFunctionDocBlockLoader();
+
         $declaredNamespaces = [];
         foreach ($this->reflectionExtension->getFunctions() as $function_name => $phpFunctionReflection) {
 
@@ -104,6 +120,7 @@ class GeneratorDumper
                 yield "namespace {$namespace};";
             }
 
+            yield FunctionGenerator::generateDocBlockByPrototypeArray($functionReflection->getPrototype(), $docBlockLoader);
             yield FunctionGenerator::generateByPrototypeArray($functionReflection->getPrototype());
         }
 
