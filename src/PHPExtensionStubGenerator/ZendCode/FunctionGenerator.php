@@ -36,7 +36,7 @@ class FunctionGenerator
             }
         }
         foreach ($prototype['arguments'] as $name => $argument) {
-            $out[] = "@param ".self::renderDocType($argument['type'])." \${$name}";
+            $out[] = "@param ".self::renderDocType($argument['type'] ?: "")." \${$name}";
         }
 
         if (array_key_existS('return', $prototype) && $prototype !== NULL) {
